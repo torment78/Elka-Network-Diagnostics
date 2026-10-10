@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><UseWPF>true</UseWPF><AssemblyName>Elka.NetworkDiagnostics</AssemblyName><ApplicationManifest>app.manifest</ApplicationManifest></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Elka.NetworkDiagnostics.Network/Elka.NetworkDiagnostics.Network.csproj" />
+    <ProjectReference Include="../Elka.NetworkDiagnostics.Windows/Elka.NetworkDiagnostics.Windows.csproj" />
+    <ProjectReference Include="../Elka.NetworkDiagnostics.Helper/Elka.NetworkDiagnostics.Helper.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <Target Name="CopyHelper" AfterTargets="Build">
+    <ItemGroup><HelperFiles Include="../Elka.NetworkDiagnostics.Helper/bin/$(Configuration)/net8.0-windows/Elka.NetworkDiagnostics.Helper.*" /></ItemGroup>
+    <Copy SourceFiles="@(HelperFiles)" DestinationFolder="$(OutDir)" />
+  </Target>
+</Project>

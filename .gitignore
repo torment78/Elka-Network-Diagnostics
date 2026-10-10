@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+.vs/
+artifacts/
+*.user
+*.suo
+.env
+.env.*
+*.pfx
+*.p12

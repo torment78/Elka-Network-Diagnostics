@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup><ProjectReference Include="../Elka.NetworkDiagnostics.Core/Elka.NetworkDiagnostics.Core.csproj" /></ItemGroup>
+</Project>

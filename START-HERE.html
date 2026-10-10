@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Elka Network Diagnostics — setup and testing guide</title>
+<style>
+:root{color-scheme:dark;--bg:#101615;--panel:#192321;--text:#e9f1ed;--muted:#b5c6be;--accent:#75dcc0;--line:#34443f}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:20px}body{margin:0;background:var(--bg);color:var(--text);font:17px/1.65 'Segoe UI',Arial,sans-serif}
+header,main,footer{max-width:1100px;margin:auto;padding:24px 32px}header{border-bottom:1px solid var(--line);color:var(--accent);font-weight:650;letter-spacing:.04em}main{padding-top:12px;padding-bottom:48px}
+h1,h2,h3{line-height:1.25}h1{font-size:36px;max-width:900px;margin:24px 0}h2{font-size:28px;margin:54px 0 18px;padding-top:20px;border-top:1px solid var(--line)}h3{font-size:22px;margin-top:32px}p,li{max-width:1000px}li{padding:5px 0}li::marker{color:var(--accent);font-weight:650}
+a{color:var(--accent);text-underline-offset:4px}a:hover{color:white}a:focus-visible{outline:2px solid var(--accent);outline-offset:4px}strong{color:#fff}
+blockquote{margin:24px 0;padding:12px 24px;border-left:4px solid #f3c878;background:#352b1c;border-radius:0 12px 12px 0}blockquote p{margin:4px 0}
+code{font-size:.91em;background:#25332d;padding:3px 6px;border-radius:5px;overflow-wrap:anywhere}table{width:100%;border-collapse:collapse;margin:24px 0;font-size:16px}td,th{padding:14px 16px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:#20372d;color:var(--accent)}td{background:var(--panel)}
+img{display:block;width:100%;height:auto;margin:28px 0 40px;border:1px solid var(--line);border-radius:16px}footer{color:var(--muted);border-top:1px solid var(--line);font-size:14px}
+@media(max-width:650px){body{font-size:16px}header,main,footer{padding-left:18px;padding-right:18px}h1{font-size:28px}h2{font-size:24px}table{font-size:14px}td,th{padding:9px 8px}ol,ul{padding-left:23px}}
+@media print{:root{color-scheme:light}body{background:white;color:#171d19;font-size:11pt}strong{color:#171d19}header,main,footer{padding:12px}a{color:#185c48}blockquote,td,th{background:#f0f4f2;color:#171d19}h2,img{break-inside:avoid}}
+</style></head><body><header>ELKA NETWORK DIAGNOSTICS / USER GUIDE</header><main><h1 id="elka-network-diagnostics-setup-and-testing-guide">Elka Network Diagnostics — setup and testing guide</h1>
+<p>Use this guide on both computers. It takes you from opening the app to comparing the results and deciding what to check next.</p>
+<p><strong><a href="https://github.com/torment78/Elka-Network-Diagnostics/releases/download/v0.2.1/Elka-Network-Diagnostics-0.2.1-win-x64.zip">Download the ready-to-run Windows app</a>.</strong> Choose the application ZIP, not GitHub&#39;s <strong>Source code</strong> ZIP. After extracting, <strong>START-HERE.html</strong> opens this illustrated guide in your browser without a Markdown editor.</p>
+<blockquote>
+<p><strong>Run all checks on ONE PC at a time. Keep the other app open and paired, but idle. Stay at the scanning PC to answer Windows permission windows and any setup prompts.</strong></p>
+</blockquote>
+<h2 id="1-open-the-app-on-both-pcs">1. Open the app on both PCs</h2>
+<p>You need two 64-bit Windows PCs connected to your local network. Use the same Elka version on both; <strong>0.2.1 or newer</strong> is needed for the shared <strong>Check both PCs</strong> button. Administrator access is needed for the packet captures and repair tools.</p>
+<ol>
+<li>Extract the <strong>whole ZIP</strong> into a folder on each PC. Do not run the app inside the ZIP or copy only the EXE.</li>
+<li>Open <strong>Elka.NetworkDiagnostics.exe</strong> on each PC.</li>
+<li>Do not launch <strong>Elka.NetworkDiagnostics.Helper.exe</strong> yourself. Elka opens it when an administrator operation needs it.</li>
+<li>Under <strong>THIS PC</strong>, select the Ethernet or Wi-Fi adapter connected to the other computer. Note the IPv4 address beside it.</li>
+</ol>
+<p>Normal testing works directly between the PCs without an internet account or server. Internet access is needed if you choose to download missing Wireshark/Npcap capture tools.</p>
+<h2 id="2-pair-the-computers">2. Pair the computers</h2>
+<p>For these instructions, call the computers PC A and PC B. These are just names to help with setup; neither is assumed to be working correctly.</p>
+<ol>
+<li>On PC A, enter <strong>PC B&#39;s address</strong> in <strong>Peer connection</strong>. On PC B, enter <strong>PC A&#39;s address</strong>.</li>
+<li>Alternatively, use <strong>Find on LAN</strong> to select the other computer. If discovery finds nothing, enter the address manually.</li>
+<li>Choose the pairing code already displayed on <strong>one</strong> PC. Use <strong>Copy</strong>, then paste or carefully enter that <strong>same complete code</strong> on the other PC. Both code boxes must match. You do not need to press <strong>New</strong> on both computers.</li>
+<li>Leave the ports at <strong>control 47830</strong> and <strong>test 47831</strong> unless you have a reason to change them. The control port must match on both PCs, and the test port must match on both PCs.</li>
+<li>Click <strong>Start endpoint</strong> on each computer. If Windows asks about firewall access, review the application and allow access for the network you are testing.</li>
+<li>Wait until both applications show <strong>Paired</strong>.</li>
+</ol>
+<p>Example addresses only — use the actual addresses shown in your apps:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>PC A</th>
+<th>PC B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address shown under THIS PC</td>
+<td>192.168.1.20</td>
+<td>192.168.1.30</td>
+</tr>
+<tr>
+<td>Address to enter in Peer connection</td>
+<td>192.168.1.30</td>
+<td>192.168.1.20</td>
+</tr>
+<tr>
+<td>Pairing code</td>
+<td>The same full code</td>
+<td>The same full code</td>
+</tr>
+<tr>
+<td>Control / test ports</td>
+<td>47830 / 47831</td>
+<td>47830 / 47831</td>
+</tr>
+</tbody></table>
+<p>Keep the pairing code private. It changes when an app starts and is not saved with your settings. <strong>After restarting either app, make the codes match again.</strong> To edit a locked connection setting, stop that endpoint first, correct the setting and start it again.</p>
+<p><img src="docs/images/pairing.png" alt="Pairing example: PC A enters PC B&#39;s address and PC B enters PC A&#39;s address. Both use the same pairing code and ports, then both click Start endpoint."></p>
+<p>There is no Reference or Diagnostic role to select. When you move to the other PC to run its scan later, leave the addresses and matching code as they are.</p>
+<h2 id="3-click-check-both-pcs-on-one-machine">3. Click Check both PCs on ONE machine</h2>
+<ol>
+<li>With both apps paired, click <strong>Check both PCs</strong> once on either machine.</li>
+<li><strong>Do not click it on the second machine.</strong> That app joins automatically.</li>
+<li>Both windows open <strong>Protocols</strong>, show progress and collect the same four direction results: UDP each way and TCP each way.</li>
+<li>Wait for <strong>Two-PC check finished</strong> and for the run buttons to become available again.</li>
+</ol>
+<p>This check sends and receives test data on both PCs. It does not perform administrator captures or network repairs. On each screen, <strong>This PC</strong> means the computer you are currently looking at; <strong>Other PC</strong> means its partner.</p>
+<p><img src="docs/images/check-both-pcs.png" alt="Click Check both PCs once on either machine. The other joins automatically, and both screens show four direction results. The values pictured are an example passing result."></p>
+<h2 id="4-decide-where-to-look-next">4. Decide where to look next</h2>
+<p>Read the result above the four rows and any suggested next step.</p>
+<table>
+<thead>
+<tr>
+<th>Result</th>
+<th>What to do next</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>All four directions delivered</td>
+<td>The selected addresses and test port worked. If your original application still fails, inspect that application&#39;s settings and actual flow. You can still run the full scans below to collect Windows evidence.</td>
+</tr>
+<tr>
+<td>Delivery shortfall toward one PC</td>
+<td>Start the full scan on the suggested receiving PC, then scan the other PC afterward. This is a starting point for investigation, not proof of which PC caused the loss.</td>
+</tr>
+<tr>
+<td>Send/connect incomplete</td>
+<td>Read the send or connection error. The sender, receiver or network path may need inspection.</td>
+</tr>
+<tr>
+<td>Test incomplete / Inconclusive</td>
+<td>Read why the test could not finish. Check pairing, readiness or port use as indicated; missing results do not prove dropped packets.</td>
+</tr>
+<tr>
+<td>Both directions fail, or no single PC is identified</td>
+<td>Run the full scan on either PC first, then on the other. Compare both reports.</td>
+</tr>
+</tbody></table>
+<p>An ordinary Elka test passing does not verify VBAN audio, another application&#39;s port, or every possible network connection. Do not reset networking just because a capture is missing or an unrelated program still has a problem.</p>
+<h2 id="5-run-the-full-scan-on-the-first-pc">5. Run the full scan on the first PC</h2>
+<blockquote>
+<p><strong>Never run Run all checks on both PCs at the same time. Do not start individual tests or captures on the other PC while a full scan is running.</strong> The scanning PC uses the other app for traffic tests; overlapping work can interfere with those tests.</p>
+</blockquote>
+<ol>
+<li>Go to the PC you want to inspect first. Return to its <strong>Diagnostics</strong> tab.</li>
+<li>Leave Elka open and paired on the other PC. Leave its controls alone.</li>
+<li>Click <strong>Run all checks</strong> on the PC being inspected.</li>
+<li><strong>Stay at that computer.</strong> Watch for Windows administrator permission windows, Elka&#39;s confirmation windows and any capture-tool setup offer. Read each prompt and respond if you want that operation to proceed. Running Elka as administrator does not remove every confirmation.</li>
+<li>Let the scan continue through the later Windows checks and packet captures. The first UDP/TCP results appearing is <strong>not</strong> the end of a full scan.</li>
+<li>Wait for the final <strong>Recommendations and repair</strong> report and for the run buttons to become available again. Read any incomplete-check messages.</li>
+<li>Use <strong>Export ZIP</strong> to save this PC&#39;s report before continuing. You can also use <strong>Copy for support</strong> for a shorter text report.</li>
+</ol>
+<p>The full scan inspects this PC&#39;s connectivity, ports, adapter drivers/bindings, Windows filtering and packet captures. It repeats traffic tests with the other PC during captures, then recommends next steps. It does not automatically execute a repair.</p>
+<p><img src="docs/images/full-scans-one-at-a-time.png" alt="Run all checks on PC A while PC B stays open and idle. Wait for completion and handle prompts, then scan PC B while PC A stays idle. Never run both full scans together."></p>
+<h3 id="how-to-tell-whether-it-is-finished">How to tell whether it is finished</h3>
+<ul>
+<li>If a test/capture is still running or the run buttons are unavailable, keep waiting.</li>
+<li>If a permission or installer window is waiting for an answer, the scan may be waiting for you. Check those windows before assuming it has stopped working.</li>
+<li>A completed full scan shows its recommendations and makes the run buttons available again. If you cancelled it, or it reports that it could not complete, read the recorded reason instead of treating it as a completed scan.</li>
+<li><strong>Do not wait for every result to turn green.</strong> Amber/red findings can remain after the work has finished. Colours describe results; the status text and available controls tell you whether you can start the next operation.</li>
+</ul>
+<p>If you decline an administrator request or cancel setup, the affected check may be listed as incomplete. That does not by itself mean the network is broken.</p>
+<p><img src="docs/images/wait-for-completion.png" alt="While work or a permission prompt is pending, keep waiting. Completion means final recommendations and available run buttons, even if some findings remain amber or red."></p>
+<h2 id="6-run-the-full-scan-on-the-other-pc">6. Run the full scan on the other PC</h2>
+<ol>
+<li>Confirm that the first PC&#39;s scan has finished and any operation/setup windows have been handled.</li>
+<li>Leave the first app open and paired, with no scan or individual test running.</li>
+<li>Go to the <strong>other PC</strong>, open <strong>Diagnostics</strong> and click <strong>Run all checks</strong> there.</li>
+<li>Stay at that PC and respond to its Windows/admin/setup prompts.</li>
+<li>Wait for its final recommendations, then export its report too.</li>
+</ol>
+<p>You do not need to change the peer addresses or swap a role. The first full scan collected the first PC&#39;s Windows evidence; this second scan collects the other PC&#39;s evidence. The shared quick-check result does not replace those two local inspections.</p>
+<h2 id="7-if-wireshark-or-npcap-setup-is-offered">7. If Wireshark or Npcap setup is offered</h2>
+<p>Elka offers setup when capture tools are missing. You can also open <strong>Packet viewer → Set up Wireshark + Npcap</strong>.</p>
+<ol>
+<li>Read the offer and choose whether to install the tools. <strong>No Windows restore point is required for Wireshark/Npcap setup.</strong></li>
+<li>Stay at the computer while the installer runs. Keep <strong>TShark</strong> selected and include <strong>Npcap</strong> when offered. Complete the installer&#39;s own terms and administrator prompts.</li>
+<li>Finish and close the setup wizard. If Windows requests a restart, finish that before retrying a failed capture, then reopen both apps and check pairing again.</li>
+<li>When setup was opened from a scan, Elka checks the tools and resumes capture. After a manual installation, use <strong>Refresh tools</strong> if needed.</li>
+</ol>
+<p>Each PC needs its own capture tools. Use <strong>Npcap</strong>, not the older WinPcap package. Cancelling Elka&#39;s waiting does not close a separate Windows driver installer; finish any open installer before trying setup again.</p>
+<p>After capture, <strong>Packet viewer</strong> shows decoded packets inside Elka. Select a packet and choose <strong>Show packet details</strong>, or <strong>Open in Wireshark</strong> for the separate analyzer. A successful adapter capture does not mean every internal Windows filter has been observed.</p>
+<h2 id="8-read-findings-before-choosing-a-repair">8. Read findings before choosing a repair</h2>
+<p>The recommendations explain the evidence and suggest the next check. A successful test needs no reset just to make every indicator look the same.</p>
+<p>For an indicated network repair or temporary QoS trial:</p>
+<ol>
+<li>On the PC you intend to change, open <strong>Admin tools</strong>.</li>
+<li>Click <strong>Create / verify Windows restore point</strong>, respond to the local prompts, and wait for a verified point.</li>
+<li>Select one proposed action, read what it changes, then choose <strong>Review and run with administrator access</strong> if you want to proceed.</li>
+<li>Complete any requested recovery or restart, then repeat the original failed check before making another change.</li>
+</ol>
+<p>Repairs remain locked if Windows cannot verify a restore point. <strong>Open System Protection</strong> provides the Windows controls. If a manual point is needed, use <strong>Copy restore point name</strong>, create a point with that name in Windows, then return to <strong>Create / verify Windows restore point</strong>. Elka does not enable System Protection automatically. The app rechecks the point before a repair; starting a new diagnostic session requires a point for that session.</p>
+<p><strong>Open System Restore</strong> opens Windows&#39; recovery wizard if you later need it. Opening the wizard does not apply a restore. Keep separate backups of personal files; a restore point is not a personal-file backup or a guarantee that every change can be undone.</p>
+<h3 id="if-an-earlier-operation-needs-cleanup">If an earlier operation needs cleanup</h3>
+<p>On the PC displaying <strong>Finish pending cleanup first</strong>, choose <strong>Admin tools → Restore pending change</strong> and respond to its local prompts. Wait for verified restoration before retrying the capture or repair. Pending WFP audit cleanup is not a request to reset the network or run System Restore.</p>
+<p>After a network reset that requires a reboot, restart Windows manually, use <strong>Acknowledge reboot and retest</strong>, then repeat the checks. Elka does not automatically repeat a reset.</p>
+<h2 id="if-pairing-or-a-check-cannot-finish">If pairing or a check cannot finish</h2>
+<p>Check that both apps are open, the selected adapters have the expected IPv4 addresses, each peer field names the other PC, and the pairing codes and ports match. Check the PCs&#39; clocks too. Discovery can fail even when entering the address manually works.</p>
+<p>If the other PC is busy, wait for its current operation to finish. If a test port is occupied, inspect <strong>Ports and applications</strong> before deciding to close the program using it. Do not close unrelated applications just to make a test pass.</p>
+<p><strong>Cancel</strong> stops a shared quick check from either PC and keeps completed direction results. If all communication disappears, the waiting PC stops waiting after 90 seconds without progress and keeps what it received. Unfinished directions remain unmeasured. A full scan or administrator operation may need to complete its cleanup; do not force-close it just because results have appeared.</p>
+<p>If the PCs cannot pair at all, each can still collect local evidence and export it. <strong>Import</strong> lets you read the other PC&#39;s exported report alongside local evidence. The traffic tests will remain incomplete until coordination is available.</p>
+<h2 id="reports-and-packet-findings">Reports and packet findings</h2>
+<p><strong>Copy for support</strong> gives you text to review and share. <strong>Export ZIP</strong> includes the fuller report and available captures. Reports can contain local addresses, program names, security information and captured traffic. Pairing codes are excluded. Keep the two PCs&#39; reports identifiable when sending them to someone for help.</p>
+<p>Use <strong>Packet path</strong> to inspect a direction and test run. <strong>Not observed</strong> describes a missing observation; it is not proof that the packet stopped there. A later retest and an earlier PktMon capture may have separate entries, so select the PktMon entry to inspect its recorded component observations. Missing capture evidence does not turn a verified delivery into a failure.</p>
+<p>Settings and saved evidence are kept under <code>%LOCALAPPDATA%\ElkaSoft\NetworkDiagnostics</code>. Reopening the app retains saved evidence, but you still need matching pairing codes for new tests. Export before using <strong>New session</strong> if you want to keep the previous report. The export&#39;s <code>captures-manifest.txt</code> lists any capture files omitted because of size or count limits.</p>
+<p>VBAN audio testing, automatic mapping through every Windows layer and connected AI assistance are not included in this release. Use the displayed evidence and recommendations to choose the next check.</p>
+</main><footer>Open Elka.NetworkDiagnostics.exe to start the application. This guide uses example addresses and illustrated screens.</footer></body></html>

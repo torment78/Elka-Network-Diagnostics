@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>12</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Version>0.2.1</Version>
+    <Authors>ElkaSoft</Authors>
+    <Company>ElkaSoft</Company>
+  </PropertyGroup>
+</Project>

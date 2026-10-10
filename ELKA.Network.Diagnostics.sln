@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{45C9F385-B9F9-4283-B6CC-C542DF92A200}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elka.NetworkDiagnostics.App", "src\Elka.NetworkDiagnostics.App\Elka.NetworkDiagnostics.App.csproj", "{AD338669-D4E0-443C-9D82-ADC2837294A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elka.NetworkDiagnostics.Core", "src\Elka.NetworkDiagnostics.Core\Elka.NetworkDiagnostics.Core.csproj", "{2CDC7920-E929-4A49-9692-005D57486696}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elka.NetworkDiagnostics.Network", "src\Elka.NetworkDiagnostics.Network\Elka.NetworkDiagnostics.Network.csproj", "{A2488ECE-70AE-417D-BED6-DC4F56FB2A36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elka.NetworkDiagnostics.Windows", "src\Elka.NetworkDiagnostics.Windows\Elka.NetworkDiagnostics.Windows.csproj", "{E18B404E-B547-4A74-897B-DA145C0C3F7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elka.NetworkDiagnostics.Helper", "src\Elka.NetworkDiagnostics.Helper\Elka.NetworkDiagnostics.Helper.csproj", "{C2DFC58D-AAC4-46BD-B1D6-AE62C9ED8A4B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1C0908F9-2951-4E8A-AECB-9FB05E6DF079}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elka.NetworkDiagnostics.Tests", "tests\Elka.NetworkDiagnostics.Tests\Elka.NetworkDiagnostics.Tests.csproj", "{843700C0-1354-450B-9AC8-C351B4FF2E6C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AD338669-D4E0-443C-9D82-ADC2837294A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD338669-D4E0-443C-9D82-ADC2837294A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD338669-D4E0-443C-9D82-ADC2837294A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD338669-D4E0-443C-9D82-ADC2837294A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CDC7920-E929-4A49-9692-005D57486696}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CDC7920-E929-4A49-9692-005D57486696}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CDC7920-E929-4A49-9692-005D57486696}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CDC7920-E929-4A49-9692-005D57486696}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2488ECE-70AE-417D-BED6-DC4F56FB2A36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2488ECE-70AE-417D-BED6-DC4F56FB2A36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2488ECE-70AE-417D-BED6-DC4F56FB2A36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2488ECE-70AE-417D-BED6-DC4F56FB2A36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E18B404E-B547-4A74-897B-DA145C0C3F7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E18B404E-B547-4A74-897B-DA145C0C3F7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E18B404E-B547-4A74-897B-DA145C0C3F7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E18B404E-B547-4A74-897B-DA145C0C3F7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2DFC58D-AAC4-46BD-B1D6-AE62C9ED8A4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2DFC58D-AAC4-46BD-B1D6-AE62C9ED8A4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2DFC58D-AAC4-46BD-B1D6-AE62C9ED8A4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2DFC58D-AAC4-46BD-B1D6-AE62C9ED8A4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{843700C0-1354-450B-9AC8-C351B4FF2E6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{843700C0-1354-450B-9AC8-C351B4FF2E6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{843700C0-1354-450B-9AC8-C351B4FF2E6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{843700C0-1354-450B-9AC8-C351B4FF2E6C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AD338669-D4E0-443C-9D82-ADC2837294A4} = {45C9F385-B9F9-4283-B6CC-C542DF92A200}
+		{2CDC7920-E929-4A49-9692-005D57486696} = {45C9F385-B9F9-4283-B6CC-C542DF92A200}
+		{A2488ECE-70AE-417D-BED6-DC4F56FB2A36} = {45C9F385-B9F9-4283-B6CC-C542DF92A200}
+		{E18B404E-B547-4A74-897B-DA145C0C3F7D} = {45C9F385-B9F9-4283-B6CC-C542DF92A200}
+		{C2DFC58D-AAC4-46BD-B1D6-AE62C9ED8A4B} = {45C9F385-B9F9-4283-B6CC-C542DF92A200}
+		{843700C0-1354-450B-9AC8-C351B4FF2E6C} = {1C0908F9-2951-4E8A-AECB-9FB05E6DF079}
+	EndGlobalSection
+EndGlobal
