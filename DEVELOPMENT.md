@@ -15,6 +15,16 @@ Append `-- --windows-inspection` to the test command to collect read-only local 
 
 The end-user entry points are README.md, SETUP.md and the browser-readable START-HERE.html. Guide PNGs and original SVGs live under `docs/images`; `scripts/build-guide-images.cjs` regenerates them with `sharp`. `scripts/build-guide-html.mjs` regenerates START-HERE.html from SETUP.md with `marked`. Both generators accept an optional installed-module path. Their generated files are committed, so normal application builds do not require Node. The portable package includes the HTML guide, Markdown copies, PNGs and the supplied .NET/Windows Desktop runtime notices under `third-party`.
 
+## Restore-point reporting and compact layout (0.2.2)
+
+Windows PowerShell 5.1 can emit mixed plain text and CLIXML on redirected stderr when invoked with `-EncodedCommand`, even with `-OutputFormat Text`. The process runner now passes the fixed script as a single `-Command` argument using `ProcessStartInfo.ArgumentList`, with no intermediate shell. Both the child console and the .NET readers explicitly use UTF-8. Native executable calls keep their existing decoding. Errors include the PowerShell error ID, category and exception HRESULT chain. Regression fixtures exercise terminating and ordinary warnings, access-denied exceptions and non-ASCII text without creating restore points.
+
+Restore failures retain their read/create/decode phase and collect bounded read-only OS, culture, elevation, disk-space, VSS-service, System Restore policy/frequency and recent-point information. Individual unavailable queries do not hide other sections. Creation warnings are followed by independent list readback; only a new matching, fresh point can verify the operation. Repair guards and the exact session name remain mandatory. Helper IPC timeouts are reported as failures rather than mistaken for user cancellation.
+
+Admin tools retains a dedicated restore-attempt details panel; support text includes the most recent recorded restore failure without the ordinary 2,000-character record excerpt limit. The status bar and evidence summaries stay short; full details remain stored and copyable. Evidence and Log panels resize independently, preserve their collapsed labels and scroll separately. Smaller windows retain the adapter controls and 365-unit stage list while hiding the duplicate overview. Preview-only flags exercise all four panel combinations at chosen window sizes without starting network listeners or elevated helpers.
+
+Microsoft references: [Checkpoint-Computer and its daily limit](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/checkpoint-computer?view=powershell-5.1), [PowerShell character encoding](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding?view=powershell-5.1).
+
 ## Large PktMon analysis (0.1.9)
 <!-- Previous capture-analysis implementation remains in use. -->
 

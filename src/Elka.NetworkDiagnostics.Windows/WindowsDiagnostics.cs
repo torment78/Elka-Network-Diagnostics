@@ -14,11 +14,27 @@ public record CommandResult(int ExitCode, string Output, string Error)
 public static class Commands
 {
     public static string SystemTool(string name) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), name);
-    public static Task<CommandResult> PowerShell(string script, CancellationToken ct = default, int seconds = 45) => Run(SystemTool("WindowsPowerShell\\v1.0\\powershell.exe"), ["-NoLogo", "-NoProfile", "-NonInteractive", "-EncodedCommand", Convert.ToBase64String(Encoding.Unicode.GetBytes("$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue'; try { " + script + " } catch { [Console]::Error.WriteLine($_.Exception.Message); exit 1 }"))], ct, seconds);
-    public static async Task<CommandResult> Run(string file, IEnumerable<string> arguments, CancellationToken ct = default, int seconds = 45, int outputLimit = 96_000)
+    public static Task<CommandResult> PowerShell(string script, CancellationToken ct = default, int seconds = 45)
+    {
+        // EncodedCommand can emit CLIXML on stderr even with OutputFormat Text.
+        // Pass a single fixed script argument directly (no intervening shell), and
+        // agree on UTF-8 at both ends so localized Windows errors remain readable.
+        string wrapped = "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); " +
+            "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue'; try { " + script +
+            " } catch { [Console]::Error.WriteLine($_.Exception.Message); " +
+            "[Console]::Error.WriteLine('Error ID: ' + $_.FullyQualifiedErrorId); " +
+            "[Console]::Error.WriteLine('Category: ' + $_.CategoryInfo.Category); " +
+            "$cause = $_.Exception; for ($i=0; $null -ne $cause -and $i -lt 5; $i++) { " +
+            "[Console]::Error.WriteLine(('Exception: {0}; HRESULT: 0x{1:X8}; {2}' -f $cause.GetType().FullName, $cause.HResult, $cause.Message)); $cause = $cause.InnerException }; exit 1 }";
+        return Run(SystemTool("WindowsPowerShell\\v1.0\\powershell.exe"),
+            ["-NoLogo", "-NoProfile", "-NonInteractive", "-OutputFormat", "Text", "-Command", wrapped],
+            ct, seconds, outputEncoding: Encoding.UTF8);
+    }
+    public static async Task<CommandResult> Run(string file, IEnumerable<string> arguments, CancellationToken ct = default, int seconds = 45, int outputLimit = 96_000, Encoding? outputEncoding = null)
     {
         if (outputLimit is < 1 or > 4_000_000) throw new ArgumentOutOfRangeException(nameof(outputLimit));
         var info = new ProcessStartInfo(file) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+        if (outputEncoding != null) { info.StandardOutputEncoding = outputEncoding; info.StandardErrorEncoding = outputEncoding; }
         foreach (string argument in arguments) info.ArgumentList.Add(argument);
         using var process = Process.Start(info) ?? throw new IOException("Could not start diagnostic process.");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct); deadline.CancelAfter(TimeSpan.FromSeconds(seconds));

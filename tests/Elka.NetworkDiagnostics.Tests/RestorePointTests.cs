@@ -71,6 +71,45 @@ internal static class RestorePointTests
         string createScript = WindowsSystemRestoreBackend.CreateScript("Elka's fixture");
         var parsed = await Commands.PowerShell("$tokens=$null; $errors=$null; [System.Management.Automation.Language.Parser]::ParseInput(" + Commands.Quote(createScript) + ", [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count) { throw 'Invalid create script' }; 'Parsed only'");
         check(parsed.ExitCode == 0 && parsed.Output.Trim() == "Parsed only", "creation script parses with escaped text without executing it");
+
+        const string localized = "Åðgangur hafnað · Zugriff verweigert · 拒绝访问";
+        var unicode = await Commands.PowerShell(Commands.Quote(localized));
+        check(unicode.ExitCode == 0 && unicode.Output.Trim() == localized, "localized PowerShell output survives the redirected UTF-8 pipe");
+        var warning = await Commands.PowerShell("Write-Warning " + Commands.Quote(localized) + " -WarningAction Stop");
+        check(warning.ExitCode != 0 && warning.Error.Contains(localized) && warning.Error.Contains("Error ID:") && warning.Error.Contains("HRESULT:"),
+            "terminating warnings retain readable localized text and structured Windows error identifiers");
+        check(!warning.Combined.Contains("CLIXML") && !warning.Combined.Contains("_x000D_") && !warning.Combined.Contains("<Objs"),
+            "encoded PowerShell command never exposes serialized warning markup");
+        var ordinaryWarning = await Commands.PowerShell("Write-Warning 'Fixture warning'; 'still running'");
+        check(ordinaryWarning.ExitCode == 0 && ordinaryWarning.Combined.Contains("Fixture warning") && !ordinaryWarning.Combined.Contains("CLIXML"),
+            "nonterminating PowerShell warning remains readable text");
+        var error = await Commands.PowerShell("throw [System.UnauthorizedAccessException]::new(" + Commands.Quote(localized) + ")");
+        check(error.ExitCode != 0 && error.Error.Contains("80070005") && error.Error.Contains(localized), "access-denied HRESULT and original localized message preserved");
+
+        var diagnosticBackend = new WindowsSystemRestoreBackend((script, _) => Task.FromResult(
+            script == WindowsSystemRestoreBackend.DiagnosticsScript ? new CommandResult(0, "Fixture Windows\nFreeSpace: 12345\nVSS: Stopped", "") :
+            new CommandResult(1, "", "Fixture access denied; HRESULT: 0x80070005")));
+        try { await diagnosticBackend.Create("Fixture only"); check(false, "failing Windows backend must throw"); }
+        catch (InvalidOperationException e)
+        {
+            check(e.Message.Contains("creating the Windows restore point") && e.Message.Contains("80070005") && e.Message.Contains("FreeSpace: 12345"),
+                "restore failure includes phase, Windows error and independent read-only diagnostics");
+        }
+        var malformed = new WindowsSystemRestoreBackend((script, _) => Task.FromResult(new CommandResult(0,
+            script == WindowsSystemRestoreBackend.DiagnosticsScript ? "Fixture diagnostics" : "not JSON", "")));
+        try { await malformed.List(); check(false, "invalid Windows list must throw"); }
+        catch (InvalidOperationException e) { check(e.Message.Contains("decoding") && e.Message.Contains("not JSON"), "malformed restore-list output has a readable failure with original evidence"); }
+
+        var stages = new List<string>();
+        var warningBackend = new FakeRestoreBackend();
+        warningBackend.Creation = name => { warningBackend.Points.Add(new(99, name, now)); throw new IOException("A warning followed creation."); };
+        var warningService = new RestorePoints(warningBackend, Path.Combine(root, "warning"), () => now, text => { stages.Add(text); return Task.CompletedTask; });
+        check((await warningService.CreateOrVerify(Guid.NewGuid())).Point.SequenceNumber == 99,
+            "creation warning can only succeed when a new matching Windows point is independently read back");
+        check(stages.Count == 3 && stages[0].StartsWith("Reading") && stages[2].StartsWith("Verifying"), "restore operation publishes all three progress phases");
+
+        var diagnosticParsed = await Commands.PowerShell("$tokens=$null; $errors=$null; [System.Management.Automation.Language.Parser]::ParseInput(" + Commands.Quote(WindowsSystemRestoreBackend.DiagnosticsScript) + ", [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count) { throw ($errors | Out-String) }; 'Parsed only'");
+        check(diagnosticParsed.ExitCode == 0 && diagnosticParsed.Output.Trim() == "Parsed only", "read-only diagnostic script parses on Windows PowerShell 5.1");
     }
 
     private sealed class FakeRestoreBackend : ISystemRestoreBackend

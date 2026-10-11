@@ -1,4 +1,16 @@
-# Verification — 2026-10-10, version 0.2.1
+# Verification — 2026-10-11, version 0.2.2
+
+## Restore-point errors and compact windows
+
+- Reproduced Windows PowerShell 5.1 emitting a `#< CLIXML` header and serialized warning XML around otherwise readable stderr for an encoded command. The plain-command invocation with explicit UTF-8 preserves localized text and Windows error identifiers. Fixtures exercise terminating/nonterminating warnings and access-denied HRESULTs without invoking System Restore creation.
+- Release build completed with zero warnings/errors. The regression suite passed 305 checks, including independent restore readback after a creation warning, invalid restore-list output, failure diagnostics, progress phases and existing repair guards. Evidence is retained in `artifacts/verification-0.2.2.txt`.
+- Isolated WPF previews used simulated restore failures at 960 × 640, 1024 × 720 and 1260 × 900 desktop units. All four Evidence/Log expansion combinations updated their bindings and released space when collapsed. Compact and normal renders were inspected, including the scrollable Admin tools error panel. These previews do not start discovery, peer listeners or elevated helpers.
+- Added a copyable restore-attempt panel and bounded short status text. Support output preserves the latest recorded restore failure separately from ordinary abbreviated evidence. Timeout reporting distinguishes an unfinished helper from user cancellation. No automatic protection/policy/frequency change or repair bypass was introduced.
+- The affected user's PC has not supplied its Windows error code yet. This fixes reproduced output/layout problems; it does not establish the cause of that PC's System Restore failure or claim a successful restore point there. No real restore point, repair, capture, firewall change or driver installation was performed during this update. Single PC mode remains deferred in `docs/NEXT-UPDATE.md`.
+
+The 0.2.2 application ZIP contains 488 files, each hash-verified against the publish folder after extraction. Size: 72,993,813 bytes. SHA-256: `FF180F6D74D678C39F1712D4843390FEB9FCDC671273FF17B92CB782E9406F6F`.
+
+## Previous public preview — 2026-10-10, version 0.2.1
 
 ## Public preview artifact
 

@@ -8,7 +8,7 @@ namespace Elka.NetworkDiagnostics.Network;
 public enum PeerCommand { Ping, Summary, PrepareTest, SendTest, FinishTest, BeginCheck, UpdateCheck, EndCheck, CancelCheck }
 public record Envelope(int Version, Guid Id, bool Response, PeerCommand Command, long Time, string Payload, string Signature);
 public record PeerReply(bool Ok, string Payload, string Error = "");
-public record PeerSummary(string Machine, string Address, string Role, string Version = "0.2.1", bool SharedCheck = false);
+public record PeerSummary(string Machine, string Address, string Role, string Version = "0.2.2", bool SharedCheck = false);
 public record PeerOptions(string Address, string PeerAddress, string PairingCode, string Role, int ControlPort = 47830, int PeerControlPort = 47830, int TestPort = 47831, int PeerTestPort = 47831);
 public record TransportHealth(bool Udp, bool Tcp, string Active, DateTimeOffset Checked, string Detail);
 

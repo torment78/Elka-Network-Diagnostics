@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>12</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <Authors>ElkaSoft</Authors>
     <Company>ElkaSoft</Company>
   </PropertyGroup>

@@ -133,6 +133,14 @@ Repairs remain locked if Windows cannot verify a restore point. **Open System Pr
 
 **Open System Restore** opens Windows' recovery wizard if you later need it. Opening the wizard does not apply a restore. Keep separate backups of personal files; a restore point is not a personal-file backup or a guarantee that every change can be undone.
 
+### If a Windows restore point cannot be created or verified
+
+Stay on **Admin tools** and read **Restore-point progress and error details**. This panel shows whether reading existing points, creation or verification failed. Use **Copy restore-point details** to share the full Windows error, including available error identifiers and the read-only Windows, disk-space, policy and service information. **Copy for support** also retains the latest recorded restore-point failure, even if later checks have added more evidence.
+
+Windows may limit automatic creation when a point was made within the previous 24 hours. Check protection on the Windows drive using **Open System Protection**. For manual creation, use **Copy restore point name**, create a point with that exact name in Windows, and return to **Create / verify**. If Windows itself cannot create the point, include its error code when asking for help. A stopped VSS service alone does not identify the cause.
+
+Repairs stay locked until Windows lists a matching point. You can still run diagnostics and packet captures without a restore point. There is no reason to reset the network just because restore-point creation failed.
+
 ### If an earlier operation needs cleanup
 
 On the PC displaying **Finish pending cleanup first**, choose **Admin tools → Restore pending change** and respond to its local prompts. Wait for verified restoration before retrying the capture or repair. Pending WFP audit cleanup is not a request to reset the network or run System Restore.
@@ -150,6 +158,10 @@ If the other PC is busy, wait for its current operation to finish. If a test por
 If the PCs cannot pair at all, each can still collect local evidence and export it. **Import** lets you read the other PC's exported report alongside local evidence. The traffic tests will remain incomplete until coordination is available.
 
 ## Reports and packet findings
+
+In **Diagnostics**, click the **Evidence** or **Log / details** header to open or close that panel independently. Collapsed headers still show the record count or selected result. Each open panel has its own scrollbar. Select an evidence record to read its full text, then use **Copy selected details** if needed.
+
+You can resize the window down to 960 × 640 desktop units. Windows display scaling affects how many physical pixels that uses. The adapter controls and diagnostic-stage list keep their readable size; shorter windows hide the duplicate scan overview, which is still available under **Protocols** and **Packet path**. The results area scrolls when necessary. Long errors no longer stretch the bottom status bar.
 
 **Copy for support** gives you text to review and share. **Export ZIP** includes the fuller report and available captures. Reports can contain local addresses, program names, security information and captured traffic. Pairing codes are excluded. Keep the two PCs' reports identifiable when sending them to someone for help.
 

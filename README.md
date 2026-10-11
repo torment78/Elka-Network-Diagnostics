@@ -2,9 +2,11 @@
 
 Find out whether two Windows PCs can send and receive, then inspect the PC that needs attention. The same application runs on both computers. No reference/diagnostic role selection, server or online account is required.
 
-**[Download the Windows app — v0.2.1](https://github.com/torment78/Elka-Network-Diagnostics/releases/download/v0.2.1/Elka-Network-Diagnostics-0.2.1-win-x64.zip)** · **[Illustrated setup guide](SETUP.md)** · [Release notes](https://github.com/torment78/Elka-Network-Diagnostics/releases/tag/v0.2.1)
+**[Download the Windows app — v0.2.2](https://github.com/torment78/Elka-Network-Diagnostics/releases/download/v0.2.2/Elka-Network-Diagnostics-0.2.2-win-x64.zip)** · **[Illustrated setup guide](SETUP.md)** · [Release notes](https://github.com/torment78/Elka-Network-Diagnostics/releases/tag/v0.2.2)
 
-This is the first public preview. Download the application ZIP above, extract the whole folder on both PCs, and open **Elka.NetworkDiagnostics.exe**. The GitHub **Source code** downloads are for the source project, not the ready-to-run app. You do not need Visual Studio or a separate .NET installation for the portable download.
+This is a public preview. Download the application ZIP above, extract the whole folder on both PCs, and open **Elka.NetworkDiagnostics.exe**. The GitHub **Source code** downloads are for the source project, not the ready-to-run app. You do not need Visual Studio or a separate .NET installation for the portable download.
+
+**New in 0.2.2:** readable Windows restore-point errors with a dedicated copy button, and a smaller resizable window with independently collapsible **Evidence** and **Log / details** panels. Diagnostics and packet captures remain available when restore-point creation fails; repairs still require a verified point.
 
 For instructions with pictures, open **START-HERE.html** from the extracted folder in your browser, or read the [setup guide here on GitHub](SETUP.md).
 

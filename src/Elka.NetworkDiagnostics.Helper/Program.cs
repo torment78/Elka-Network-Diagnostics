@@ -59,7 +59,7 @@ internal static class Program
             using var operationLock = new FileStream(Path.Combine(Root, "helper.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             if (File.Exists(Journal) && r.Action != "RestorePending") throw new InvalidOperationException(RecoveryGuidance.Describe(SessionStore.ReadOr<RecoveryRecord>(Journal)));
             if (r.Action == "RestorePending") { await Restore(); await Emit("done", "Recorded temporary state restored and verified."); return; }
-            var restorePoints = new RestorePoints(new WindowsSystemRestoreBackend(), Root);
+            var restorePoints = new RestorePoints(new WindowsSystemRestoreBackend(), Root, progress: text => Emit("info", text));
             if (r.Action == "CreateRestorePoint")
             {
                 await Emit("info", "Creating or verifying your Windows restore point… This can take several minutes.");

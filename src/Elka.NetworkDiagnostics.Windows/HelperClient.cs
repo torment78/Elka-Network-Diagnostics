@@ -18,19 +18,29 @@ public static class HelperClient
         info.ArgumentList.Add(pipeName); info.ArgumentList.Add(nonce);
         using var process = Process.Start(info) ?? throw new IOException("Elevated helper could not start.");
         using var deadline = new CancellationTokenSource(TimeSpan.FromMinutes(request.Action == "CreateRestorePoint" ? 15 : 4));
-        await pipe.WaitForConnectionAsync(deadline.Token);
-        using var reader = new StreamReader(pipe, leaveOpen: true);
-        using var writer = new StreamWriter(pipe, leaveOpen: true) { AutoFlush = true };
-        if (await reader.ReadLineAsync(deadline.Token) != nonce) throw new InvalidDataException("Helper authentication failed.");
-        await writer.WriteLineAsync(Json.Write(request));
-        bool completed = false;
-        while (await reader.ReadLineAsync(deadline.Token) is string line)
+        try
         {
-            if (line.Length > 150_000) throw new InvalidDataException("Helper response exceeds the limit.");
-            var message = Json.Read<HelperMessage>(line); await onMessage(message);
-            if (message.Kind == "error") throw new InvalidOperationException(message.Text);
-            if (message.Kind is "done" or "cancelled" or "inconclusive") { completed = true; break; }
+            await pipe.WaitForConnectionAsync(deadline.Token);
+            using var reader = new StreamReader(pipe, leaveOpen: true);
+            using var writer = new StreamWriter(pipe, leaveOpen: true) { AutoFlush = true };
+            if (await reader.ReadLineAsync(deadline.Token) != nonce) throw new InvalidDataException("Helper authentication failed.");
+            await writer.WriteLineAsync(Json.Write(request));
+            bool completed = false;
+            while (await reader.ReadLineAsync(deadline.Token) is string line)
+            {
+                if (line.Length > 150_000) throw new InvalidDataException("Helper response exceeds the limit.");
+                var message = Json.Read<HelperMessage>(line); await onMessage(message);
+                if (message.Kind == "error") throw new InvalidOperationException(message.Text);
+                if (message.Kind is "done" or "cancelled" or "inconclusive") { completed = true; break; }
+            }
+            if (!completed) throw new IOException("Helper connection ended early. Check pending recovery before another repair.");
         }
-        if (!completed) throw new IOException("Helper connection ended early. Check pending recovery before another repair.");
+        catch (OperationCanceledException e) when (deadline.IsCancellationRequested)
+        {
+            throw new TimeoutException("The administrator operation did not finish reporting within its time limit. " +
+                "This is not a successful result. The helper may still be running; let it finish before retrying. " +
+                (request.Action == "CreateRestorePoint" ? "Check System Protection, then use Create / verify to read back any completed point. Repairs remain locked until verified." :
+                "Check Admin tools for pending recovery before another operation."), e);
+        }
     }
 }

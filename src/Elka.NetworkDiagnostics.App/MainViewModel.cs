@@ -45,6 +45,8 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
     private AdminAction adminAction;
     private RestorePointReceipt? restorePoint;
     private bool restoreVerificationFailed;
+    private string restoreAttemptDetail = "No restore-point attempt recorded in this session.";
+    private bool evidenceExpanded = true, logExpanded = true;
     private DiagnosticAssessment? assessment;
     private bool collectingAssessment;
     private string? recommendedAdminAction;
@@ -85,6 +87,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         stage = Stages[0]; adminAction = AdminActions[0];
         var saved = store.LoadSettings(); peerAddress = saved.PeerAddress; controlPort = saved.ControlPort.ToString(); testPort = saved.TestPort.ToString();
         foreach (var item in store.Session.Evidence.AsEnumerable().Reverse().Take(200)) Evidence.Add(item);
+        restoreAttemptDetail = Evidence.FirstOrDefault(e => e.Stage == "Restore point")?.Details ?? restoreAttemptDetail;
         selectedEvidence = Evidence.FirstOrDefault();
         var savedPath = SessionStore.ReadOr<PacketPathReport>(Path.Combine(store.Root, "packet-path.json"));
         if (savedPath?.SessionId == store.Session.Id && savedPath.Flows is { Count: <= 32 })
@@ -112,6 +115,8 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         PathCommand = Command(async ct => store.Add(await windows.PathCheck(NeedAdapter(), PeerAddress, ct)));
         restorePoint = SessionStore.ReadOr<RestorePointReceipt>(Path.Combine(store.Root, "restore-point.json"));
         CreateRestorePointCommand = Command(_ => RunAdmin("CreateRestorePoint"));
+        CopyRestoreErrorCommand = new UiCommand(() => { Clipboard.SetText(RestoreAttemptDetail); Status = "Restore-point details copied."; return Task.CompletedTask; }, () => true);
+        CopyEvidenceCommand = new UiCommand(() => { Clipboard.SetText(EvidenceDetail); Status = "Selected evidence copied."; return Task.CompletedTask; }, () => true);
         SystemProtectionCommand = Command(_ => OpenRecoveryTool("SystemPropertiesProtection.exe"));
         SystemRestoreCommand = Command(_ => OpenRecoveryTool("rstrui.exe"));
         CopyRestoreNameCommand = Command(_ => { Clipboard.SetText(RestorePoints.Description(store.Session.Id)); Status = "Restore point name copied. In System Protection select Create, paste this name, then return here and click Create / verify."; return Task.CompletedTask; });
@@ -121,7 +126,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         ExportCommand = Command(_ => { Export(); return Task.CompletedTask; });
         ImportCommand = Command(_ => { Import(); return Task.CompletedTask; });
         SupportCommand = Command(_ => { Clipboard.SetText(SupportSummary()); Status = "Support summary copied. Review it before sharing; it contains local IP addresses but no pairing code."; return Task.CompletedTask; });
-        NewSessionCommand = Command(_ => { if (MessageBox.Show("Export the current report first if you want to keep it. Start a new diagnostic session?", "New session", MessageBoxButton.YesNo) == MessageBoxResult.Yes) { store.NewSession(Role); assessment = null; recommendedAdminAction = null; Evidence.Clear(); SelectedEvidence = null; PacketPaths.Clear(); DirectionChecks.Clear(); SelectedPacketPath = null; ScanFocus = new("Start with the two-PC check", "Traffic: not tested", "Capture: not collected", "Start both endpoints, then choose Check both PCs on either one."); PacketPathStatus = "New session. Check both PCs, or run all checks for a deeper inspection."; Changed(nameof(EvidenceCount)); Changed(nameof(SessionLabel)); NotifyState(); } return Task.CompletedTask; });
+        NewSessionCommand = Command(_ => { if (MessageBox.Show("Export the current report first if you want to keep it. Start a new diagnostic session?", "New session", MessageBoxButton.YesNo) == MessageBoxResult.Yes) { store.NewSession(Role); RestoreAttemptDetail = "No restore-point attempt recorded in this session."; assessment = null; recommendedAdminAction = null; Evidence.Clear(); SelectedEvidence = null; PacketPaths.Clear(); DirectionChecks.Clear(); SelectedPacketPath = null; ScanFocus = new("Start with the two-PC check", "Traffic: not tested", "Capture: not collected", "Start both endpoints, then choose Check both PCs on either one."); PacketPathStatus = "New session. Check both PCs, or run all checks for a deeper inspection."; Changed(nameof(EvidenceCount)); Changed(nameof(SessionLabel)); NotifyState(); } return Task.CompletedTask; });
         CancelCommand = new UiCommand(async () => { operation?.Cancel(); if (coordinatedCheck != null) await coordinatedCheck.Cancel(); }, () => busy && (!adminRunning || analyzingPackets)); commands.Add((UiCommand)CancelCommand);
         InitializePacketViewer();
         Refresh(saved.AdapterId);
@@ -131,6 +136,7 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
     public ICommand RunStageCommand { get; } public ICommand BaselineCommand { get; } public ICommand CheckBothCommand { get; } public ICommand UdpCommand { get; } public ICommand TcpCommand { get; } public ICommand PathCommand { get; }
     public ICommand AdminCommand { get; } public ICommand RestoreCommand { get; } public ICommand AcknowledgeCommand { get; } public ICommand ExportCommand { get; } public ICommand ImportCommand { get; } public ICommand SupportCommand { get; } public ICommand NewSessionCommand { get; } public ICommand CancelCommand { get; }
     public ICommand CreateRestorePointCommand { get; } public ICommand SystemProtectionCommand { get; } public ICommand SystemRestoreCommand { get; } public ICommand CopyRestoreNameCommand { get; }
+    public ICommand CopyRestoreErrorCommand { get; } public ICommand CopyEvidenceCommand { get; }
     public ICommand OpenAdminCommand { get; }
     public ICommand OpenPacketPathCommand { get; } public ICommand InspectFindingCommand { get; }
     private ICommand Command(Func<CancellationToken, Task> action, Func<bool>? can = null)
@@ -142,7 +148,12 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         if (busy) return; busy = true; operation = new(); NotifyState();
         try { await action(operation.Token); }
         catch (OperationCanceledException) { Status = "Test cancelled. Local tools remain available."; }
-        catch (Exception e) { Status = "Could not complete: " + e.Message; store.Add(Record.Create(Stage.Title, Outcome.Inconclusive, e.Message, e.GetType().Name)); }
+        catch (Exception e)
+        {
+            Status = "Could not complete. Open Evidence / Log or Copy for support for the full error.";
+            if (SelectedEvidence?.Outcome != Outcome.Failed || !SelectedEvidence.Details.StartsWith(e.Message, StringComparison.Ordinal))
+                store.Add(Record.Create(Stage.Title, Outcome.Inconclusive, ShortMessage(e.Message), e.Message + "\n\nError type: " + e.GetType().Name));
+        }
         finally { operation.Dispose(); operation = null; busy = false; NotifyState(); }
     }
     private void Refresh(string? preferred = null)
@@ -355,13 +366,15 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         try
         {
             Status = "Waiting for local administrator approval…";
+            if (action == "CreateRestorePoint") RestoreAttemptDetail = "Waiting for local administrator approval. No repair will run.";
             if (action == "NpcapCapture" && collectingAssessment) assessment!.NpcapStatus = "incomplete";
             await HelperClient.Run(new(action, local?.Id ?? "", port, local?.Address ?? "", store.Session.Id, PeerAddress.Trim()), async message =>
             {
                 if (message.Kind == "done") completed = true;
                 if (action == "CreateRestorePoint" && message.Kind == "done" && message.Artifact != null) pointVerified = true;
-                Status = message.Text.Split('\n')[0];
-                store.Add(Record.Create(message.Text.StartsWith("PktMon capture diagnostics\n", StringComparison.Ordinal) ? "Capture diagnostics" : "Admin tools", message.Kind == "error" ? Outcome.Failed : message.Kind is "cancelled" or "inconclusive" ? Outcome.Inconclusive : Outcome.Information, Status, message.Text + (message.Artifact == null ? "" : "\nSaved artifact: " + message.Artifact)));
+                Status = ShortMessage(message.Text);
+                if (action == "CreateRestorePoint") RestoreAttemptDetail = message.Text;
+                store.Add(Record.Create(action == "CreateRestorePoint" ? "Restore point" : message.Text.StartsWith("PktMon capture diagnostics\n", StringComparison.Ordinal) ? "Capture diagnostics" : "Admin tools", message.Kind == "error" ? Outcome.Failed : message.Kind is "cancelled" or "inconclusive" ? Outcome.Inconclusive : Outcome.Information, Status, message.Text + (message.Artifact == null ? "" : "\nSaved artifact: " + message.Artifact)));
                 if (collectingAssessment && message.Kind == "inconclusive") assessment!.Incomplete.Add(action + ": " + message.Text);
                 if (action == "NpcapCapture" && message.Kind == "info" && message.Artifact?.EndsWith("-npcap.pcapng", StringComparison.Ordinal) == true)
                 {
@@ -447,10 +460,16 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
                 restoreVerificationFailed = false;
             }
         }
-        catch
+        catch (Exception e)
         {
             if (action == "NpcapCapture" && collectingAssessment) assessment!.NpcapStatus = "incomplete (capture failed)";
             if (action == "CreateRestorePoint" || RestorePoints.RequiredFor(action)) restoreVerificationFailed = true;
+            if (action == "CreateRestorePoint")
+            {
+                RestoreAttemptDetail = e.Message;
+                if (SelectedEvidence?.Stage != "Restore point" || SelectedEvidence.Outcome != Outcome.Failed)
+                    store.Add(Record.Create("Restore point", Outcome.Failed, "Restore-point operation could not finish. No repair was run.", e.Message));
+            }
             throw;
         }
         finally { adminRunning = false; if (ownsAssessment) { collectingAssessment = false; RefreshPacketPaths(); } Changed(nameof(RecoveryStatus)); NotifyState(); }
@@ -495,7 +514,9 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
         var evidence = store.Snapshot().Evidence;
         var captureDiagnostics = evidence.LastOrDefault(e => e.Stage == "Capture diagnostics");
         if (captureDiagnostics != null) lines.Add($"{captureDiagnostics.Time:u} | Latest capture diagnostics\n{captureDiagnostics.Details}\n");
-        lines.AddRange(evidence.TakeLast(30).Where(e => e != captureDiagnostics).Select(e => $"{e.Time:u} | {e.Stage} | {e.Outcome}\n{e.Summary}\n{(e.Details.Length > 2000 ? e.Details[..2000] + " [truncated]" : e.Details)}\n"));
+        var restoreFailure = evidence.LastOrDefault(e => e.Stage == "Restore point" && e.Outcome == Outcome.Failed);
+        if (restoreFailure != null) lines.Add($"{restoreFailure.Time:u} | Latest recorded restore-point failure (may precede later success)\n{restoreFailure.Details}\n");
+        lines.AddRange(evidence.TakeLast(30).Where(e => e != captureDiagnostics && e != restoreFailure).Select(e => $"{e.Time:u} | {e.Stage} | {e.Outcome}\n{e.Summary}\n{(e.Details.Length > 2000 ? e.Details[..2000] + " [truncated]" : e.Details)}\n"));
         return string.Join(Environment.NewLine, lines);
     }
     private AdapterInfo NeedAdapter() => Adapter ?? throw new InvalidOperationException("Choose an IPv4 network adapter first.");
@@ -525,6 +546,9 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
     public string TransportLabel => transport;
     public string ProtocolSummary => protocolSummary;
     public string EvidenceCount => $"{store.Session.Evidence.Count} records";
+    public bool EvidenceExpanded { get => evidenceExpanded; set => Set(ref evidenceExpanded, value); }
+    public bool LogExpanded { get => logExpanded; set => Set(ref logExpanded, value); }
+    public string RestoreAttemptDetail { get => restoreAttemptDetail; private set => Set(ref restoreAttemptDetail, value); }
     public string SessionLabel => $"Saved locally · Session {store.Session.Id.ToString()[..8]} · No internet account required";
     public string AdapterSummary => Adapter == null ? "No adapter selected" : $"{Adapter.Status}  ·  Gateway {Adapter.Gateway}  ·  {Adapter.Description}";
     public string EvidenceDetail => SelectedEvidence == null ? "Run a stage to collect evidence. No network repair runs automatically.\n\nTwo-PC setup:\n1. Open this app on both PCs and select their LAN adapters.\n2. Enter the other PC's IPv4 address on each side.\n3. Copy one pairing code to both PCs and match the ports.\n4. Start both endpoints, then select Run checks.\n\nIf Windows requests firewall access, allow this app on the intended LAN profile. A failed ping alone does not prove UDP is broken." : $"{SelectedEvidence.Time:u} | {SelectedEvidence.Machine}\n{SelectedEvidence.Outcome} · {SelectedEvidence.Stage}\n\n{SelectedEvidence.Details}";
@@ -547,7 +571,12 @@ public sealed partial class MainViewModel : INotifyPropertyChanged, IAsyncDispos
     public string PairingCode { get => pairingCode; set => Set(ref pairingCode, value); }
     public string ControlPort { get => controlPort; set => Set(ref controlPort, value); }
     public string TestPort { get => testPort; set => Set(ref testPort, value); }
-    public string Status { get => status; set => Set(ref status, value); }
+    public string Status { get => status; set => Set(ref status, ShortMessage(value)); }
+    private static string ShortMessage(string text)
+    {
+        string first = text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "No details returned.";
+        return first.Length <= 200 ? first : first[..197] + "…";
+    }
     public event PropertyChangedEventHandler? PropertyChanged;
     private void Changed([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new(name));
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null) { if (EqualityComparer<T>.Default.Equals(field, value)) return false; field = value; Changed(name); return true; }
